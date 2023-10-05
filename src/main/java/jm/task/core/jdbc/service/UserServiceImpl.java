@@ -5,7 +5,6 @@ import java.util.List;
 
 public class UserServiceImpl implements UserService {
     private UserDaoJDBCImpl userDaoJDBC = new UserDaoJDBCImpl();
-
     @Override
     public void createUsersTable() {
         userDaoJDBC.createUsersTable();
