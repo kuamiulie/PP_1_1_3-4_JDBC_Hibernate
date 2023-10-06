@@ -3,21 +3,24 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
+
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
     private Session session;
+
     public UserDaoHibernateImpl() {
 
     }
 
     {
         try {
-            session = Util.getSessionFromConfig();
+            session = Util.getSessionFactoryFromConfig().openSession();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void createUsersTable() {
         try {
@@ -30,9 +33,6 @@ public class UserDaoHibernateImpl implements UserDao {
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
-            if (session.getTransaction() != null && session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
         }
     }
 
@@ -44,9 +44,6 @@ public class UserDaoHibernateImpl implements UserDao {
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
-            if (session.getTransaction() != null && session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
         }
     }
 
@@ -85,17 +82,17 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        List<User> list = (List<User>) session.createQuery("from User ").getResultList();
+        List<User> list = session.createQuery("from User ", User.class).getResultList();
         for (User user : list) {
             System.out.println(user.toString());
         }
         return list;
     }
 
-
     @Override
     public void cleanUsersTable() {
         try {
+            session.beginTransaction();
             session.createSQLQuery("delete from users").executeUpdate();
             session.getTransaction().commit();
         } catch (Exception e) {
