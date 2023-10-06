@@ -9,24 +9,32 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class Util {
+    private Util() {
+
+    }
+
     private static Connection connection;
-    public static Connection establishConnection() throws SQLException, IOException {
+
+    public static Connection establishConnection() {
         Properties prop = new Properties();
-        FileInputStream fis = new FileInputStream("src/main/java/jm/task/core/jdbc/util/Properties.properties");
-        prop.load(fis);
-        try {
+        try (FileInputStream fis = new FileInputStream("src/main/resources/database.properties")) {
+            prop.load(fis);
             Driver driver = new com.mysql.cj.jdbc.Driver();
             DriverManager.registerDriver(driver);
-            try {
-                connection = DriverManager
-                        .getConnection(prop.getProperty("url"), prop.getProperty("username"), prop.getProperty("password"));
-            } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("DataBase was not created");
-            }
-        } catch (SQLException e) {
-            System.out.println("Driver was not found");
+            connection = DriverManager
+                    .getConnection(prop.getProperty("url"), prop.getProperty("username"), prop.getProperty("password"));
+        } catch (SQLException | IOException e) {
+            System.out.println("Connection was not established");
         }
         return connection;
     }
+
+    public static void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
+
